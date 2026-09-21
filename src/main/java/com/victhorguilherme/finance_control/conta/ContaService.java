@@ -2,6 +2,7 @@ package com.victhorguilherme.finance_control.conta;
 import com.victhorguilherme.finance_control.exceptions.NomeContaDuplicadoException;
 import com.victhorguilherme.finance_control.exceptions.RecursoNaoEncontradoException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,6 +66,12 @@ public class ContaService {
         conta.setNome(nome.strip());
         return conta;
     }
+
+    public void deletarConta(long id){
+        Conta contaEncontrada = buscarPorId(id);
+        contaList.remove(contaEncontrada);
+    }
+
 
 
 }
