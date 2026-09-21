@@ -36,4 +36,11 @@ public class ContaService {
         throw new RecursoNaoEncontradoException("Conta de ID: " + id + " , não encontrada.");
     }
 
+    public Conta atualizarConta(long id, String nome){
+        Conta conta = buscarPorId(id);
+        conta.setNome(nome);
+        return conta;
+    }
+
+
 }
