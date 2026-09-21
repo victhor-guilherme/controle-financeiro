@@ -2,7 +2,6 @@ package com.victhorguilherme.finance_control.conta;
 
 
 import com.victhorguilherme.finance_control.conta.dto.ContaRequest;
-import com.victhorguilherme.finance_control.exceptions.NomeContaDuplicadoException;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -1,8 +1,7 @@
 package com.victhorguilherme.finance_control.conta;
-import com.victhorguilherme.finance_control.exceptions.NomeContaDuplicadoException;
-import com.victhorguilherme.finance_control.exceptions.RecursoNaoEncontradoException;
+import com.victhorguilherme.finance_control.exceptions.AccountNameDuplicate;
+import com.victhorguilherme.finance_control.exceptions.ResourceNotFound;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.DeleteMapping;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +26,7 @@ public class ContaService {
                 .anyMatch(c -> c.getNome().equalsIgnoreCase(nomeLimpo));
 
         if (nomeJaExiste) {
-            throw new NomeContaDuplicadoException("Já existe uma conta cadastrada com o nome: " + nomeLimpo);
+            throw new AccountNameDuplicate("Já existe uma conta cadastrada com o nome: " + nomeLimpo);
         }
 
 
@@ -47,7 +46,7 @@ public class ContaService {
                 return conta;
             }
         }
-        throw new RecursoNaoEncontradoException("Conta de ID: " + id + " , não encontrada.");
+        throw new ResourceNotFound("Conta de ID: " + id + " , não encontrada.");
     }
 
     public Conta atualizarConta(long id, String nome){
@@ -60,7 +59,7 @@ public class ContaService {
                 .anyMatch(c -> c.getNome().equalsIgnoreCase(nomeLimpo) && c.getId() != id);
 
         if (nomeJaExiste) {
-            throw new NomeContaDuplicadoException("Já existe uma conta cadastrada com o nome: " + nomeLimpo);
+            throw new AccountNameDuplicate("Já existe uma conta cadastrada com o nome: " + nomeLimpo);
         }
 
         conta.setNome(nome.strip());
