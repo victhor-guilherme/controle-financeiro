@@ -35,22 +35,7 @@ public class ContaController {
     }
 
     @PutMapping("atualizar/{id}")
-    public Conta atualizarConta(long id, String nome) {
-        List<Conta> todasContas = contaService.listarContas();
-
-        boolean nomeJaExiste = todasContas.stream()
-                .anyMatch(conta -> conta.getNome().equalsIgnoreCase(nome) && conta.getId() != id);
-
-        if (nomeJaExiste) {
-            throw new NomeContaDuplicadoException("Já existe uma conta cadastrada com o nome: " + nome);
-        }
-
-        Conta conta = buscarPorId(id);
-        conta.setNome(nome);
-        return conta;
+    public Conta atualizarConta(@PathVariable long id, @RequestBody @Valid ContaRequest request) {
+        return contaService.atualizarConta(id, request.getNome());
     }
-
-
-
-
 }

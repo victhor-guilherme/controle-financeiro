@@ -1,4 +1,5 @@
 package com.victhorguilherme.finance_control.conta;
+import com.victhorguilherme.finance_control.exceptions.NomeContaDuplicadoException;
 import com.victhorguilherme.finance_control.exceptions.RecursoNaoEncontradoException;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +18,19 @@ public class ContaService {
     private long proximoId = 1;
 
     public Conta criarConta(String nome){
-        Conta novaConta = new Conta(nome, proximoId);
+
+        String nomeLimpo = nome.strip();
+        List<Conta> todasContas = listarContas();
+
+        boolean nomeJaExiste = todasContas.stream()
+                .anyMatch(c -> c.getNome().equalsIgnoreCase(nomeLimpo));
+
+        if (nomeJaExiste) {
+            throw new NomeContaDuplicadoException("Já existe uma conta cadastrada com o nome: " + nomeLimpo);
+        }
+
+
+        Conta novaConta = new Conta(nomeLimpo, proximoId);
         contaList.add(novaConta);
         proximoId++;
         return novaConta;
@@ -38,7 +51,18 @@ public class ContaService {
 
     public Conta atualizarConta(long id, String nome){
         Conta conta = buscarPorId(id);
-        conta.setNome(nome);
+
+        String nomeLimpo = nome.strip();
+        List<Conta> todasContas = listarContas();
+
+        boolean nomeJaExiste = todasContas.stream()
+                .anyMatch(c -> c.getNome().equalsIgnoreCase(nomeLimpo) && c.getId() != id);
+
+        if (nomeJaExiste) {
+            throw new NomeContaDuplicadoException("Já existe uma conta cadastrada com o nome: " + nomeLimpo);
+        }
+
+        conta.setNome(nome.strip());
         return conta;
     }
 
