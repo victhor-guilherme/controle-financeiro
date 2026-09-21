@@ -1,6 +1,9 @@
 package com.victhorguilherme.finance_control.conta;
 
+import com.victhorguilherme.finance_control.exceptions.RecursoNaoEncontradoException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +11,11 @@ import java.util.List;
 @Service
 public class ContaService {
 
-    private List<Conta> contaList = new ArrayList<>();
+    private List<Conta> contaList;
+
+    {
+        contaList = new ArrayList<>();
+    }
 
     private long proximoId = 1;
 
@@ -20,13 +27,20 @@ public class ContaService {
     }
 
     public List<Conta> listarContas(){
-        List<Conta> copyContaList = new ArrayList<>();
-        for(Conta contas: contaList){
-            copyContaList.add(contas);
-        }
-        return copyContaList;
+        return new ArrayList<>(contaList);
     }
 
+    public Conta buscarPorId(@PathVariable long id) {
+        for (Conta conta : contaList) {
+            if (conta.getId() == id) {
+                return conta;
+            }
+        }
+        throw new RecursoNaoEncontradoException();
+    }
 
+    public Conta criar(@RequestBody Conta conta){
+        return criarConta(conta.getNome());
+    }
 
 }

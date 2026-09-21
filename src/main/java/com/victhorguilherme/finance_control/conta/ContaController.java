@@ -17,16 +17,23 @@ public class ContaController {
         this.contaService = contaService;
     }
 
-    @GetMapping()
+    @GetMapping("/{id}")
     public List<Conta> listarContas(){
         return contaService.listarContas();
 
     }
 
-    @PostMapping
+    @PostMapping("/{id}")
     public Conta criarConta(@RequestBody @Valid ContaRequest request){
         return contaService.criarConta(request.getNome());
     }
+
+    @GetMapping("/{id}")
+    public Conta buscarPorId(@PathVariable long id){
+        return contaService.buscarPorId(id);
+    }
+
+
 
 
 }
