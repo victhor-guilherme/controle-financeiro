@@ -17,12 +17,14 @@ public class Transacao{
     private Categoria categoria;
 
     public Transacao(
-            long id, String descricao,
+            long id,
+            String descricao,
             BigDecimal valor,
             LocalDate data,
             TipoTransacao tipo,
             Conta conta,
-            Categoria categoria){
+            Categoria categoria
+            ){
 
         this.id = id;
         this.descricao = descricao;
