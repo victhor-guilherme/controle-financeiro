@@ -4,6 +4,7 @@ import com.victhorguilherme.finance_control.categoria.Categoria;
 import com.victhorguilherme.finance_control.categoria.CategoriaService;
 import com.victhorguilherme.finance_control.conta.Conta;
 import com.victhorguilherme.finance_control.conta.ContaService;
+import com.victhorguilherme.finance_control.exceptions.ResourceNotFound;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -52,4 +53,24 @@ public class TransacaoService {
      transacaoList.add(transacao);
      return transacao;
     }
+
+    public Transacao buscarPorId(long id){
+        for (Transacao transacao : transacaoList) {
+            if (transacao.getId() == id) {
+                return transacao;
+            }
+        }
+        throw new ResourceNotFound("Transação de ID: " + id + " , não encontrada.");
+    }
+
+    public List<Transacao> listarTransacoes() {
+        return new ArrayList<>(transacaoList);
+
+    }
+
+    public void deletarTransacao(long id){
+        Transacao transacaoEncontrada = buscarPorId(id);
+        transacaoList.remove(transacaoEncontrada);
+    }
+
 }

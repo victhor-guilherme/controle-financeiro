@@ -2,10 +2,10 @@ package com.victhorguilherme.finance_control.transacao;
 
 import com.victhorguilherme.finance_control.transacao.dto.TransacaoRequest;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class TransacaoController {
@@ -25,6 +25,22 @@ public class TransacaoController {
                 request.getTipo(),
                 contaId,
                 request.getCategoriaId());
+    }
+
+    @GetMapping("/transacoes/{id}")
+    public Transacao buscarPorId(@PathVariable long id){
+        return transacaoService.buscarPorId(id);
+    }
+
+    @GetMapping("/transacoes/listar")
+    public List<Transacao> listarTransacao(){
+        return transacaoService.listarTransacoes();
+    }
+
+    @DeleteMapping("/transacoes/excluir/{id}")
+    public ResponseEntity<Void> deletarTransacao(@PathVariable long id){
+        transacaoService.deletarTransacao(id);
+        return ResponseEntity.noContent().build();
     }
 
 
