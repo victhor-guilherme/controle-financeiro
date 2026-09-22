@@ -57,8 +57,8 @@ public class TransacaoController {
     }
 
     @GetMapping("/contas/{contaId}/saldo")
-    public BigDecimal consultarSaldo(@PathVariable long id){
-        return transacaoService.calcularSaldo(id);
+    public BigDecimal consultarSaldo(@PathVariable long contaId){
+        return transacaoService.calcularSaldo(contaId);
     }
 
 
