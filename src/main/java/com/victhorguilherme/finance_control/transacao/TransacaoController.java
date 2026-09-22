@@ -43,6 +43,18 @@ public class TransacaoController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/transacoes/atualizar/{id}")
+    public Transacao atualizarTransacao(@PathVariable long id,
+                                        @RequestBody @Valid TransacaoRequest request){
+
+        return transacaoService.atualizarTransacao(id,
+                request.getDescricao(),
+                request.getValor(),
+                request.getData(),
+                request.getTipo(),
+                request.getCategoriaId());
+    }
+
 
 
 }

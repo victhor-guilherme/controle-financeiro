@@ -73,4 +73,26 @@ public class TransacaoService {
         transacaoList.remove(transacaoEncontrada);
     }
 
-}
+    public Transacao atualizarTransacao(long id,
+                                        String descricao,
+                                        BigDecimal valor,
+                                        LocalDate data,
+                                        TipoTransacao tipo,
+                                        long categoriaId) {
+
+        Transacao transacao = buscarPorId(id);
+
+        Categoria categoria = categoriaService.buscarPorId(categoriaId);
+
+            String descricaoLimpa = descricao.strip();
+
+            transacao.setDescricao(descricaoLimpa);
+            transacao.setCategoria(categoria);
+            transacao.setTipo(tipo);
+            transacao.setData(data);
+            transacao.setValor(valor);
+
+            return transacao;
+        }
+    }
+
