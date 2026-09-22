@@ -112,8 +112,16 @@ public class TransacaoService {
             return saldo;
         }
 
-        public List<Transacao> consultarExtrato(long contaId, LocalDate dataInicio, LocalDate dataFim){
+        public List<Transacao> consultarExtrato(long contaId,
+                                                LocalDate dataInicio,
+                                                LocalDate dataFim,
+                                                Long categoriaId){
+
             Conta contaEncontrada = contaService.buscarPorId(contaId);
+
+            if(categoriaId !=null){
+                Categoria categoriaEncontrada = categoriaService.buscarPorId(categoriaId);
+            }
 
             if (dataInicio != null && dataFim != null && dataInicio.isAfter(dataFim)){
                 throw new InvalidPeriodException("A data de ínicio não pode ser posterior à data fim");
@@ -132,6 +140,11 @@ public class TransacaoService {
                             continue;
 
                         }
+
+                        if(categoriaId != null && categoriaId != transacao.getCategoria().getId()){
+                            continue;
+                        }
+
                         resultExtract.add(transacao);
                     }
                 }

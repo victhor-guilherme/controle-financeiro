@@ -66,8 +66,9 @@ public class TransacaoController {
     @GetMapping("/contas/{contaId}/extrato")
     public List<Transacao> consultarExtrato(@PathVariable long contaId,
                                             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
-                                            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim ){
-        return transacaoService.consultarExtrato(contaId, dataInicio, dataFim);
+                                            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+                                            @RequestParam(required = false) Long categoriaId){
+        return transacaoService.consultarExtrato(contaId, dataInicio, dataFim, categoriaId);
     }
 
 
