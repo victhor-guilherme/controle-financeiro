@@ -4,6 +4,7 @@ import com.victhorguilherme.finance_control.categoria.Categoria;
 import com.victhorguilherme.finance_control.categoria.CategoriaService;
 import com.victhorguilherme.finance_control.conta.Conta;
 import com.victhorguilherme.finance_control.conta.ContaService;
+import com.victhorguilherme.finance_control.exceptions.InvalidPeriodException;
 import com.victhorguilherme.finance_control.exceptions.ResourceNotFound;
 import org.springframework.stereotype.Service;
 
@@ -111,12 +112,26 @@ public class TransacaoService {
             return saldo;
         }
 
-        public List<Transacao> consultarExtrato(long contaId){
+        public List<Transacao> consultarExtrato(long contaId, LocalDate dataInicio, LocalDate dataFim){
             Conta contaEncontrada = contaService.buscarPorId(contaId);
+
+            if (dataInicio != null && dataFim != null && dataInicio.isAfter(dataFim)){
+                throw new InvalidPeriodException("A data de ínicio não pode ser posterior à data fim");
+            }
+
 
                 List<Transacao> resultExtract = new ArrayList<>();
                 for (Transacao transacao : transacaoList) {
                     if (contaEncontrada.getId() == transacao.getConta().getId()){
+
+                        if(dataInicio != null && transacao.getData().isBefore(dataInicio)){
+                            continue;
+                        }
+
+                        if(dataFim != null && transacao.getData().isAfter(dataFim)){
+                            continue;
+
+                        }
                         resultExtract.add(transacao);
                     }
                 }

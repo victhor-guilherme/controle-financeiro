@@ -2,10 +2,12 @@ package com.victhorguilherme.finance_control.transacao;
 
 import com.victhorguilherme.finance_control.transacao.dto.TransacaoRequest;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -62,8 +64,10 @@ public class TransacaoController {
     }
 
     @GetMapping("/contas/{contaId}/extrato")
-    public List<Transacao> consultarExtrato(@PathVariable long contaId){
-        return transacaoService.consultarExtrato(contaId);
+    public List<Transacao> consultarExtrato(@PathVariable long contaId,
+                                            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
+                                            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim ){
+        return transacaoService.consultarExtrato(contaId, dataInicio, dataFim);
     }
 
 
