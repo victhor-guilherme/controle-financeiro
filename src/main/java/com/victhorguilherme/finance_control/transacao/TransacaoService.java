@@ -94,5 +94,20 @@ public class TransacaoService {
 
             return transacao;
         }
-    }
 
+        public BigDecimal calcularSaldo(long contaId) {
+            Conta conta = contaService.buscarPorId(contaId);
+            BigDecimal saldo = BigDecimal.ZERO;
+
+            for (Transacao transacao : transacaoList) {
+                if (transacao.getConta().getId() == conta.getId()) {
+                    if (transacao.getTipo() == TipoTransacao.RECEITA) {
+                        saldo = saldo.add(transacao.getValor());
+                    } else if (transacao.getTipo() == TipoTransacao.DESPESA) {
+                        saldo = saldo.subtract(transacao.getValor());
+                    }
+                }
+            }
+            return saldo;
+        }
+}
