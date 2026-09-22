@@ -1,4 +1,8 @@
 package com.victhorguilherme.finance_control.transacao;
 
-public class TipoTransacao {
+public enum TipoTransacao {
+
+    RECEITA,
+    DESPESA
+
 }
