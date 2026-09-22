@@ -110,4 +110,17 @@ public class TransacaoService {
             }
             return saldo;
         }
-}
+
+        public List<Transacao> consultarExtrato(long contaId){
+            Conta contaEncontrada = contaService.buscarPorId(contaId);
+
+                List<Transacao> resultExtract = new ArrayList<>();
+                for (Transacao transacao : transacaoList) {
+                    if (contaEncontrada.getId() == transacao.getConta().getId()){
+                        resultExtract.add(transacao);
+                    }
+                }
+                return resultExtract;
+            }
+
+        }

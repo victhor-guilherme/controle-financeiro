@@ -61,6 +61,10 @@ public class TransacaoController {
         return transacaoService.calcularSaldo(contaId);
     }
 
+    @GetMapping("/contas/{contaId}/extrato")
+    public List<Transacao> consultarExtrato(@PathVariable long contaId){
+        return transacaoService.consultarExtrato(contaId);
+    }
 
 
 }
