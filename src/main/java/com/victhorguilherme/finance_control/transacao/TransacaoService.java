@@ -151,4 +151,25 @@ public class TransacaoService {
                 return resultExtract;
             }
 
+            public boolean possuiTransacao(long contaId){
+
+                Conta contaEncontrada = contaService.buscarPorId(contaId);
+
+                for(Transacao transacaoRecebida : transacaoList) {
+                    if (transacaoRecebida.getConta().getId() == contaEncontrada.getId()) {
+                        return true;
+                    }
+                }
+
+                return false;
+
+
+            }
+
+
+
+
+
+
+
         }

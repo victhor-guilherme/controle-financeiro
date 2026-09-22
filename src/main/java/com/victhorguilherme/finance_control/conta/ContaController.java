@@ -13,9 +13,13 @@ import java.util.List;
 public class ContaController {
 
     private final ContaService contaService;
+    private final ContaExclusaoService contaExclusaoService;
 
-    public ContaController(ContaService contaService) {
+    public ContaController(ContaService contaService,
+                           ContaExclusaoService contaExclusaoService) {
+
         this.contaService = contaService;
+        this.contaExclusaoService = contaExclusaoService;
     }
 
     @GetMapping("/listar")
@@ -41,7 +45,7 @@ public class ContaController {
 
     @DeleteMapping("/excluir/{id}")
     public ResponseEntity<Void> deletarConta(@PathVariable long id){
-        contaService.deletarConta(id);
+        contaExclusaoService.deletarConta(id);
         return ResponseEntity.noContent().build();
     }
 }

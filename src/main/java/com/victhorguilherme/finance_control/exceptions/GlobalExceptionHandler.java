@@ -28,4 +28,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleInvalidPeriod(InvalidPeriodException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
+
+    @ExceptionHandler(AccountHasTransactionsException.class)
+    public ResponseEntity<String> handleAccountHasTransactions(AccountHasTransactionsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
 }
