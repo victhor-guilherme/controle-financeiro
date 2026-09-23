@@ -141,7 +141,7 @@ public class TransacaoService {
 
                         }
 
-                        if(categoriaId != null && categoriaId != transacao.getCategoria().getId()){
+                        if(categoriaId != null && categoriaId.equals(transacao.getCategoria().getId())){
                             continue;
                         }
 
