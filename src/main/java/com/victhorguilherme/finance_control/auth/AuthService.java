@@ -1,14 +1,13 @@
 package com.victhorguilherme.finance_control.auth;
 
+import com.victhorguilherme.finance_control.auth.dto.LoginRequest;
 import com.victhorguilherme.finance_control.auth.dto.RegisterRequest;
 import com.victhorguilherme.finance_control.exceptions.EmailUserDuplicate;
+import com.victhorguilherme.finance_control.exceptions.InvalidCredentialsException;
 import com.victhorguilherme.finance_control.usuario.Usuario;
 import com.victhorguilherme.finance_control.usuario.UsuarioRepository;
-import jakarta.validation.Valid;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Locale;
 
@@ -42,5 +41,19 @@ public class AuthService {
         return usuarioRepository.save(usuario);
 
 
+    }
+
+    public Usuario autenticar(LoginRequest request){
+
+        String email = request.getEmail().strip();
+
+        Usuario usuario = usuarioRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new InvalidCredentialsException("E-mail ou senha inválidos."));
+
+        if(passwordEncoder.matches(request.getSenha(), usuario.getSenhaHash())){
+            return usuario;
+        }else{
+            throw new InvalidCredentialsException("E-mail ou senha inválidos.");
+        }
     }
 }
