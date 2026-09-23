@@ -2,8 +2,6 @@ package com.victhorguilherme.finance_control.conta;
 import com.victhorguilherme.finance_control.exceptions.AccountNameDuplicate;
 import com.victhorguilherme.finance_control.exceptions.ResourceNotFound;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -17,21 +15,13 @@ public class ContaService {
 
 
     public Conta criarConta(String nome) {
-
         String nomeLimpo = nome.strip();
-        List<Conta> todasContas = listarContas();
-
-        boolean nomeJaExiste = todasContas.stream()
-                .anyMatch(c -> c.getNome().equalsIgnoreCase(nomeLimpo));
-
-        if (nomeJaExiste) {
+        if(contaRepository.existsByNomeIgnoreCase(nomeLimpo)){
             throw new AccountNameDuplicate("Já existe uma conta cadastrada com o nome: " + nomeLimpo);
         }
 
-
         Conta novaConta = new Conta(nomeLimpo);
-        contaRepository.save(novaConta);
-        return novaConta;
+        return contaRepository.save(novaConta);
     }
 
     public List<Conta> listarContas() {
@@ -39,31 +29,26 @@ public class ContaService {
     }
 
     public Conta buscarPorId(long id) {
-        Conta conta = contaRepository.findById(id)
+        return contaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFound("Conta de ID: " + id + " , não encontrada."));
 
-    return conta;
 }
 
     public Conta atualizarConta(long id, String nome){
-        Conta conta = buscarPorId(id);
 
+        Conta contaEncontrada = buscarPorId(id);
         String nomeLimpo = nome.strip();
-        List<Conta> todasContas = listarContas();
 
-        boolean nomeJaExiste = todasContas.stream()
-                .anyMatch(c -> c.getNome().equalsIgnoreCase(nomeLimpo) && c.getId() != id);
-
-        if (nomeJaExiste) {
+        if (contaRepository.existsByNomeIgnoreCaseAndIdNot(nomeLimpo, id)) {
             throw new AccountNameDuplicate("Já existe uma conta cadastrada com o nome: " + nomeLimpo);
         }
 
-        conta.setNome(nomeLimpo);
-        contaRepository.save(conta);
-        return conta;
+        contaEncontrada.setNome(nomeLimpo);
+        return contaRepository.save(contaEncontrada);
     }
 
     public void deletarConta(long id){
+        buscarPorId(id);
         contaRepository.deleteById(id);
     }
 

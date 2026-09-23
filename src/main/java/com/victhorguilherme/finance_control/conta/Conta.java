@@ -20,7 +20,7 @@ public class Conta {
 
     }
 
-    public long getId(){
+    public Long getId(){
         return this.id;
     }
 

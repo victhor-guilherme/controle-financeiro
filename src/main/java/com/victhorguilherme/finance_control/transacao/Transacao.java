@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 public class Transacao{
 
-    private long id;
+    private Long id;
     private String descricao;
     private BigDecimal valor;
     private LocalDate data;
@@ -17,7 +17,7 @@ public class Transacao{
     private Categoria categoria;
 
     public Transacao(
-            long id,
+            Long id,
             String descricao,
             BigDecimal valor,
             LocalDate data,
@@ -35,7 +35,7 @@ public class Transacao{
         this.valor = valor;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 

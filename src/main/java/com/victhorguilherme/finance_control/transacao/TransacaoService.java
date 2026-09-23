@@ -101,7 +101,7 @@ public class TransacaoService {
             BigDecimal saldo = BigDecimal.ZERO;
 
             for (Transacao transacao : transacaoList) {
-                if (transacao.getConta().getId() == conta.getId()) {
+                if (transacao.getConta().getId().equals(conta.getId())){
                     if (transacao.getTipo() == TipoTransacao.RECEITA) {
                         saldo = saldo.add(transacao.getValor());
                     } else if (transacao.getTipo() == TipoTransacao.DESPESA) {
@@ -130,7 +130,7 @@ public class TransacaoService {
 
                 List<Transacao> resultExtract = new ArrayList<>();
                 for (Transacao transacao : transacaoList) {
-                    if (contaEncontrada.getId() == transacao.getConta().getId()){
+                    if (contaEncontrada.getId().equals(transacao.getConta().getId())){
 
                         if(dataInicio != null && transacao.getData().isBefore(dataInicio)){
                             continue;
@@ -156,7 +156,7 @@ public class TransacaoService {
                 Conta contaEncontrada = contaService.buscarPorId(contaId);
 
                 for(Transacao transacaoRecebida : transacaoList) {
-                    if (transacaoRecebida.getConta().getId() == contaEncontrada.getId()) {
+                    if (transacaoRecebida.getConta().getId().equals(contaEncontrada.getId())){
                         return true;
                     }
                 }
