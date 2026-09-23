@@ -1,68 +1,59 @@
 package com.victhorguilherme.finance_control.categoria;
 
+import com.victhorguilherme.finance_control.auth.UsuarioAtual;
+import com.victhorguilherme.finance_control.categoria.dto.CategoriaResponse;
 import com.victhorguilherme.finance_control.exceptions.CategoryNameDuplicate;
 import com.victhorguilherme.finance_control.exceptions.ResourceNotFound;
+import com.victhorguilherme.finance_control.usuario.Usuario;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 public class CategoriaService {
-
-
     private final CategoriaRepository categoriaRepository;
+    private final UsuarioAtual usuarioAtual;
 
-
-
-    public CategoriaService(CategoriaRepository categoriaRepository){
+    public CategoriaService(CategoriaRepository categoriaRepository, UsuarioAtual usuarioAtual) {
         this.categoriaRepository = categoriaRepository;
+        this.usuarioAtual = usuarioAtual;
     }
 
-
-    public Categoria criarCategoria(String nome){
+    @Transactional
+    public CategoriaResponse criarCategoria(String nome) {
+        Usuario usuario = usuarioAtual.obter();
         String nomeLimpo = nome.strip();
-        List<Categoria> todasCategorias = listarCategoria();
-
-        boolean categoriaJaExiste = todasCategorias.stream()
-                .anyMatch(c -> c.getNome().equalsIgnoreCase(nomeLimpo));
-
-        if (categoriaJaExiste) {
+        if (categoriaRepository.existsByNomeIgnoreCaseAndUsuario_Id(nomeLimpo, usuario.getId())) {
             throw new CategoryNameDuplicate("Já existe uma categoria cadastrada com este nome: " + nomeLimpo);
         }
-
-        Categoria categoria = new Categoria(nomeLimpo);
-        categoriaRepository.save(categoria);
-        return categoria;
+        return CategoriaResponse.de(categoriaRepository.saveAndFlush(new Categoria(nomeLimpo, usuario)));
     }
 
-    public List<Categoria> listarCategoria(){
-        return categoriaRepository.findAll();
+    public List<CategoriaResponse> listarCategoria() {
+        return categoriaRepository.findByUsuario_IdOrderById(usuarioAtual.obter().getId())
+                .stream().map(CategoriaResponse::de).toList();
     }
 
-    public Categoria buscarPorId(long id){
-
-      Categoria categoria = categoriaRepository.findById(id)
-              .orElseThrow(() -> new ResourceNotFound("Categoria de ID: " + id + " , não encontrada."));
-
-      return categoria;
+    public Categoria buscarPorId(long id) {
+        return categoriaRepository.findByIdAndUsuario_Id(id, usuarioAtual.obter().getId())
+                .orElseThrow(() -> new ResourceNotFound("Categoria não encontrada."));
     }
 
-    public Categoria atualizarCategoria(String nome, long id){
+    public CategoriaResponse buscarResposta(long id) {
+        return CategoriaResponse.de(buscarPorId(id));
+    }
+
+    @Transactional
+    public CategoriaResponse atualizarCategoria(String nome, long id) {
         Categoria categoria = buscarPorId(id);
-
         String nomeLimpo = nome.strip();
-        List<Categoria> todasCategorias = listarCategoria();
-
-        boolean categoriaJaExiste = todasCategorias.stream()
-                .anyMatch(c -> c.getNome().equalsIgnoreCase(nomeLimpo) && c.getId() != id);
-
-
-        if(categoriaJaExiste){
+        if (categoriaRepository.existsByNomeIgnoreCaseAndUsuario_IdAndIdNot(
+                nomeLimpo, usuarioAtual.obter().getId(), id)) {
             throw new CategoryNameDuplicate("Já existe uma categoria cadastrada com este nome: " + nomeLimpo);
         }
-
         categoria.setNome(nomeLimpo);
-        categoriaRepository.save(categoria);
-        return categoria;
+        return CategoriaResponse.de(categoriaRepository.saveAndFlush(categoria));
     }
 }
 

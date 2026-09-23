@@ -1,6 +1,7 @@
 package com.victhorguilherme.finance_control.transacao;
 
 import com.victhorguilherme.finance_control.transacao.dto.TransacaoRequest;
+import com.victhorguilherme.finance_control.transacao.dto.TransacaoResponse;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ public class TransacaoController {
     }
 
     @PostMapping("/contas/{contaId}/transacoes")
-    public Transacao criarTransacao(@PathVariable long contaId, @RequestBody @Valid TransacaoRequest request){
+    public TransacaoResponse criarTransacao(@PathVariable long contaId, @RequestBody @Valid TransacaoRequest request){
         return transacaoService.criarTransacao(
                 request.getDescricao(),
                 request.getValor(),
@@ -31,12 +32,12 @@ public class TransacaoController {
     }
 
     @GetMapping("/transacoes/{id}")
-    public Transacao buscarPorId(@PathVariable long id){
+    public TransacaoResponse buscarPorId(@PathVariable long id){
         return transacaoService.buscarPorId(id);
     }
 
     @GetMapping("/transacoes/listar")
-    public List<Transacao> listarTransacao(){
+    public List<TransacaoResponse> listarTransacao(){
         return transacaoService.listarTransacoes();
     }
 
@@ -47,7 +48,7 @@ public class TransacaoController {
     }
 
     @PutMapping("/transacoes/atualizar/{id}")
-    public Transacao atualizarTransacao(@PathVariable long id,
+    public TransacaoResponse atualizarTransacao(@PathVariable long id,
                                         @RequestBody @Valid TransacaoRequest request){
 
         return transacaoService.atualizarTransacao(id,
@@ -64,7 +65,7 @@ public class TransacaoController {
     }
 
     @GetMapping("/contas/{contaId}/extrato")
-    public List<Transacao> consultarExtrato(@PathVariable long contaId,
+    public List<TransacaoResponse> consultarExtrato(@PathVariable long contaId,
                                             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
                                             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
                                             @RequestParam(required = false) Long categoriaId){

@@ -1,57 +1,64 @@
 package com.victhorguilherme.finance_control.conta;
+
+import com.victhorguilherme.finance_control.auth.UsuarioAtual;
+import com.victhorguilherme.finance_control.conta.dto.ContaResponse;
 import com.victhorguilherme.finance_control.exceptions.AccountNameDuplicate;
 import com.victhorguilherme.finance_control.exceptions.ResourceNotFound;
+import com.victhorguilherme.finance_control.usuario.Usuario;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 public class ContaService {
-
     private final ContaRepository contaRepository;
+    private final UsuarioAtual usuarioAtual;
 
-    public ContaService(ContaRepository contaRepository) {
+    public ContaService(ContaRepository contaRepository, UsuarioAtual usuarioAtual) {
         this.contaRepository = contaRepository;
+        this.usuarioAtual = usuarioAtual;
     }
 
-
-    public Conta criarConta(String nome) {
+    @Transactional
+    public ContaResponse criarConta(String nome) {
+        Usuario usuario = usuarioAtual.obter();
         String nomeLimpo = nome.strip();
-        if(contaRepository.existsByNomeIgnoreCase(nomeLimpo)){
+        if (contaRepository.existsByNomeIgnoreCaseAndUsuario_Id(nomeLimpo, usuario.getId())) {
             throw new AccountNameDuplicate("Já existe uma conta cadastrada com o nome: " + nomeLimpo);
         }
-
-        Conta novaConta = new Conta(nomeLimpo);
-        return contaRepository.save(novaConta);
+        return ContaResponse.de(contaRepository.saveAndFlush(new Conta(nomeLimpo, usuario)));
     }
 
-    public List<Conta> listarContas() {
-        return contaRepository.findAll();
+    public List<ContaResponse> listarContas() {
+        return contaRepository.findByUsuario_IdOrderById(usuarioAtual.obter().getId())
+                .stream().map(ContaResponse::de).toList();
     }
 
     public Conta buscarPorId(long id) {
-        return contaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Conta de ID: " + id + " , não encontrada."));
+        return contaRepository.findByIdAndUsuario_Id(id, usuarioAtual.obter().getId())
+                .orElseThrow(() -> new ResourceNotFound("Conta não encontrada."));
+    }
 
-}
+    public ContaResponse buscarResposta(long id) {
+        return ContaResponse.de(buscarPorId(id));
+    }
 
-    public Conta atualizarConta(long id, String nome){
-
-        Conta contaEncontrada = buscarPorId(id);
+    @Transactional
+    public ContaResponse atualizarConta(long id, String nome) {
+        Conta conta = buscarPorId(id);
         String nomeLimpo = nome.strip();
-
-        if (contaRepository.existsByNomeIgnoreCaseAndIdNot(nomeLimpo, id)) {
+        if (contaRepository.existsByNomeIgnoreCaseAndUsuario_IdAndIdNot(
+                nomeLimpo, usuarioAtual.obter().getId(), id)) {
             throw new AccountNameDuplicate("Já existe uma conta cadastrada com o nome: " + nomeLimpo);
         }
-
-        contaEncontrada.setNome(nomeLimpo);
-        return contaRepository.save(contaEncontrada);
+        conta.setNome(nomeLimpo);
+        return ContaResponse.de(contaRepository.saveAndFlush(conta));
     }
 
-    public void deletarConta(long id){
-        buscarPorId(id);
-        contaRepository.deleteById(id);
+    @Transactional
+    public void deletarConta(long id) {
+        contaRepository.delete(buscarPorId(id));
+        contaRepository.flush();
     }
-
-
-
 }

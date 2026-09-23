@@ -3,6 +3,7 @@ package com.victhorguilherme.finance_control.transacao.dto;
 import com.victhorguilherme.finance_control.transacao.TipoTransacao;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 public class TransacaoRequest {
 
     @NotBlank
+    @Size(max = 255)
     private String descricao;
 
     @NotNull

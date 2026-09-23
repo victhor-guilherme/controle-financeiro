@@ -1,153 +1,105 @@
 package com.victhorguilherme.finance_control.transacao;
 
+import com.victhorguilherme.finance_control.auth.UsuarioAtual;
 import com.victhorguilherme.finance_control.categoria.Categoria;
 import com.victhorguilherme.finance_control.categoria.CategoriaService;
 import com.victhorguilherme.finance_control.conta.Conta;
 import com.victhorguilherme.finance_control.conta.ContaService;
 import com.victhorguilherme.finance_control.exceptions.InvalidPeriodException;
 import com.victhorguilherme.finance_control.exceptions.ResourceNotFound;
+import com.victhorguilherme.finance_control.transacao.dto.TransacaoResponse;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 public class TransacaoService {
-
     private final ContaService contaService;
     private final CategoriaService categoriaService;
     private final TransacaoRepository transacaoRepository;
+    private final UsuarioAtual usuarioAtual;
 
-
-    public TransacaoService(ContaService contaService,
-                            CategoriaService categoriaService,
-                            TransacaoRepository transacaoRepository){
-
+    public TransacaoService(ContaService contaService, CategoriaService categoriaService,
+                            TransacaoRepository transacaoRepository, UsuarioAtual usuarioAtual) {
         this.contaService = contaService;
         this.categoriaService = categoriaService;
         this.transacaoRepository = transacaoRepository;
+        this.usuarioAtual = usuarioAtual;
     }
 
-    public Transacao criarTransacao(
-                                    String descricao,
-                                    BigDecimal valor,
-                                    LocalDate data,
-                                    TipoTransacao tipo,
-                                    long contaId,
-                                    long categoriaId) {
-
+    @Transactional
+    public TransacaoResponse criarTransacao(String descricao, BigDecimal valor, LocalDate data,
+                                            TipoTransacao tipo, long contaId, long categoriaId) {
         Conta conta = contaService.buscarPorId(contaId);
         Categoria categoria = categoriaService.buscarPorId(categoriaId);
-
-        Transacao transacao = new Transacao(
-                descricao.strip(),
-                valor,
-                data,
-                tipo,
-                conta,
-                categoria
-        );
-
-     return transacaoRepository.save(transacao);
+        Transacao transacao = new Transacao(descricao.strip(), valor, data, tipo, conta, categoria);
+        return TransacaoResponse.de(transacaoRepository.saveAndFlush(transacao));
     }
 
-    public Transacao buscarPorId(long id){
-        return transacaoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Transação de ID: " + id + " , não encontrada."));
+    private Transacao buscarEntidade(long id) {
+        return transacaoRepository.findByIdAndConta_Usuario_Id(id, usuarioAtual.obter().getId())
+                .orElseThrow(() -> new ResourceNotFound("Transação não encontrada."));
     }
 
-    public List<Transacao> listarTransacoes() {
-       return transacaoRepository.findAll();
+    public TransacaoResponse buscarPorId(long id) {
+        return TransacaoResponse.de(buscarEntidade(id));
     }
 
-    public void deletarTransacao(long id){
-        Transacao transacaoEncontrada = buscarPorId(id);
-        transacaoRepository.deleteById(transacaoEncontrada.getId());
+    public List<TransacaoResponse> listarTransacoes() {
+        return transacaoRepository.findByConta_Usuario_IdOrderByDataAscIdAsc(usuarioAtual.obter().getId())
+                .stream().map(TransacaoResponse::de).toList();
     }
 
-    public Transacao atualizarTransacao(long id,
-                                        String descricao,
-                                        BigDecimal valor,
-                                        LocalDate data,
-                                        TipoTransacao tipo,
-                                        long categoriaId) {
+    @Transactional
+    public void deletarTransacao(long id) {
+        transacaoRepository.delete(buscarEntidade(id));
+        transacaoRepository.flush();
+    }
 
-        Transacao transacao = buscarPorId(id);
-
+    @Transactional
+    public TransacaoResponse atualizarTransacao(long id, String descricao, BigDecimal valor,
+                                                LocalDate data, TipoTransacao tipo, long categoriaId) {
+        Transacao transacao = buscarEntidade(id);
         Categoria categoria = categoriaService.buscarPorId(categoriaId);
+        transacao.setDescricao(descricao.strip());
+        transacao.setCategoria(categoria);
+        transacao.setTipo(tipo);
+        transacao.setData(data);
+        transacao.setValor(valor);
+        return TransacaoResponse.de(transacaoRepository.saveAndFlush(transacao));
+    }
 
-            String descricaoLimpa = descricao.strip();
+    public BigDecimal calcularSaldo(long contaId) {
+        contaService.buscarPorId(contaId);
+        return transacaoRepository.findByConta_IdAndConta_Usuario_IdOrderByDataAscIdAsc(
+                        contaId, usuarioAtual.obter().getId()).stream()
+                .map(transacao -> transacao.getTipo() == TipoTransacao.RECEITA
+                        ? transacao.getValor() : transacao.getValor().negate())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 
-            transacao.setDescricao(descricaoLimpa);
-            transacao.setCategoria(categoria);
-            transacao.setTipo(tipo);
-            transacao.setData(data);
-            transacao.setValor(valor);
-
-            return transacaoRepository.save(transacao);
+    public List<TransacaoResponse> consultarExtrato(long contaId, LocalDate dataInicio,
+                                                   LocalDate dataFim, Long categoriaId) {
+        contaService.buscarPorId(contaId);
+        if (categoriaId != null) {
+            categoriaService.buscarPorId(categoriaId);
         }
-
-        public BigDecimal calcularSaldo(long contaId) {
-            Conta conta = contaService.buscarPorId(contaId);
-            BigDecimal saldo = BigDecimal.ZERO;
-
-            for (Transacao transacao : transacaoRepository.findByConta_Id(contaId)) {
-                if (transacao.getTipo() == TipoTransacao.RECEITA) {
-                        saldo = saldo.add(transacao.getValor());
-                    } else if (transacao.getTipo() == TipoTransacao.DESPESA) {
-                        saldo = saldo.subtract(transacao.getValor());
-                    }
-                }
-
-            return saldo;
+        if (dataInicio != null && dataFim != null && dataInicio.isAfter(dataFim)) {
+            throw new InvalidPeriodException("A data de início não pode ser posterior à data fim.");
         }
+        return transacaoRepository.findByConta_IdAndConta_Usuario_IdOrderByDataAscIdAsc(
+                        contaId, usuarioAtual.obter().getId()).stream()
+                .filter(t -> dataInicio == null || !t.getData().isBefore(dataInicio))
+                .filter(t -> dataFim == null || !t.getData().isAfter(dataFim))
+                .filter(t -> categoriaId == null || categoriaId.equals(t.getCategoria().getId()))
+                .map(TransacaoResponse::de).toList();
+    }
 
-        public List<Transacao> consultarExtrato(long contaId,
-                                                LocalDate dataInicio,
-                                                LocalDate dataFim,
-                                                Long categoriaId){
-
-            Conta contaEncontrada = contaService.buscarPorId(contaId);
-
-            if(categoriaId !=null){
-                Categoria categoriaEncontrada = categoriaService.buscarPorId(categoriaId);
-            }
-
-            if (dataInicio != null && dataFim != null && dataInicio.isAfter(dataFim)){
-                throw new InvalidPeriodException("A data de ínicio não pode ser posterior à data fim");
-            }
-
-
-                List<Transacao> resultExtract = new ArrayList<>();
-                   for(Transacao transacao : transacaoRepository.findByConta_Id(contaId)){
-
-                        if(dataInicio != null && transacao.getData().isBefore(dataInicio)){
-                            continue;
-                        }
-
-                        if(dataFim != null && transacao.getData().isAfter(dataFim)){
-                            continue;
-
-                        }
-
-                        if(categoriaId != null && !categoriaId.equals(transacao.getCategoria().getId())){
-                            continue;
-                        }
-
-                        resultExtract.add(transacao);
-                    }
-
-                return resultExtract;
-            }
-
-
-            public boolean possuiTransacao(long contaId){
-
-                Conta contaEncontrada = contaService.buscarPorId(contaId);
-                return transacaoRepository.existsByConta_Id(contaId);
-
-
-            }
-        }
+    public boolean possuiTransacao(long contaId) {
+        contaService.buscarPorId(contaId);
+        return transacaoRepository.existsByConta_IdAndConta_Usuario_Id(contaId, usuarioAtual.obter().getId());
+    }
+}

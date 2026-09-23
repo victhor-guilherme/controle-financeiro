@@ -1,12 +1,12 @@
 package com.victhorguilherme.finance_control.categoria;
 
+import com.victhorguilherme.finance_control.usuario.Usuario;
 import jakarta.persistence.*;
-
+import java.util.Objects;
 
 @Entity
 @Table(name = "categories")
 public class Categoria {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -14,28 +14,19 @@ public class Categoria {
     @Column(nullable = false)
     private String nome;
 
-    public Categoria(long id, String nome){
-        this.id = id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", updatable = false)
+    private Usuario usuario;
+
+    protected Categoria() { }
+
+    public Categoria(String nome, Usuario usuario) {
         this.nome = nome;
+        this.usuario = Objects.requireNonNull(usuario);
     }
 
-    protected Categoria(){
-
-    }
-
-    public Categoria(String nome){
-        this.nome = nome;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
+    public Long getId() { return id; }
+    public String getNome() { return nome; }
+    public Usuario getUsuario() { return usuario; }
+    public void setNome(String nome) { this.nome = nome; }
 }
