@@ -19,14 +19,29 @@ public class Usuario {
     @Column(nullable = false)
     private String senhaHash;
 
-    public Usuario(long id, String nome, String email, String senhaHash){
-        this.id = id;
+    public Usuario (String nome, String email, String senhaHash){
         this.nome = nome;
         this.email = email;
         this.senhaHash = senhaHash;
     }
 
+    protected Usuario(){
 
+    }
 
+    public String getNome() {
+        return nome;
+    }
 
+    public Long getId() {
+        return id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getSenhaHash() {
+        return senhaHash;
+    }
 }
