@@ -3,18 +3,20 @@ package com.victhorguilherme.finance_control.categoria;
 import com.victhorguilherme.finance_control.exceptions.CategoryNameDuplicate;
 import com.victhorguilherme.finance_control.exceptions.ResourceNotFound;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class CategoriaService {
 
-    private List<Categoria> categoriaList;
-    {
-        categoriaList = new ArrayList<>();
+
+    private final CategoriaRepository categoriaRepository;
+
+
+
+    public CategoriaService(CategoriaRepository categoriaRepository){
+        this.categoriaRepository = categoriaRepository;
     }
 
-    private long contadorId = 1;
 
     public Categoria criarCategoria(String nome){
         String nomeLimpo = nome.strip();
@@ -27,22 +29,21 @@ public class CategoriaService {
             throw new CategoryNameDuplicate("Já existe uma categoria cadastrada com este nome: " + nomeLimpo);
         }
 
-        Categoria categoria = new Categoria(contadorId++, nomeLimpo);
-        categoriaList.add(categoria);
+        Categoria categoria = new Categoria(nomeLimpo);
+        categoriaRepository.save(categoria);
         return categoria;
     }
 
     public List<Categoria> listarCategoria(){
-        return new ArrayList<>(categoriaList);
+        return categoriaRepository.findAll();
     }
 
     public Categoria buscarPorId(long id){
-        for(Categoria categoria : categoriaList){
-            if(categoria.getId() == id){
-                return categoria;
-            }
-        }
-        throw new ResourceNotFound("Categoria de ID: " + id + " , não encontrada.");
+
+      Categoria categoria = categoriaRepository.findById(id)
+              .orElseThrow(() -> new ResourceNotFound("Categoria de ID: " + id + " , não encontrada."));
+
+      return categoria;
     }
 
     public Categoria atualizarCategoria(String nome, long id){
@@ -59,7 +60,8 @@ public class CategoriaService {
             throw new CategoryNameDuplicate("Já existe uma categoria cadastrada com este nome: " + nomeLimpo);
         }
 
-        categoria.setNome(nome.strip());
+        categoria.setNome(nomeLimpo);
+        categoriaRepository.save(categoria);
         return categoria;
     }
 }

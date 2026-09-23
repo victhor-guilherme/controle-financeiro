@@ -1,4 +1,6 @@
 package com.victhorguilherme.finance_control.categoria;
 
-public class CategoriaRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface CategoriaRepository extends JpaRepository<Categoria, Long> {
 }
