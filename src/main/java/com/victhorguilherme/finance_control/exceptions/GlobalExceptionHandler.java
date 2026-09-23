@@ -33,4 +33,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleAccountHasTransactions(AccountHasTransactionsException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
+
+    @ExceptionHandler(EmailUserDuplicate.class)
+    public ResponseEntity<String> handleEmailUserDuplicate(EmailUserDuplicate ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
 }
