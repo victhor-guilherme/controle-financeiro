@@ -46,7 +46,7 @@ Não é necessário instalar o Maven: o projeto inclui o Maven Wrapper.
 Clone o repositório:
 
 ```bash
-git clone https://github.com/victhor-guilherme/controle-financeiro.git
+git clone https://github.com/victhor-santos/controle-financeiro.git
 cd controle-financeiro
 ```
 
