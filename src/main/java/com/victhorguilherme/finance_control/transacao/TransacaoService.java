@@ -16,17 +16,18 @@ import java.util.List;
 @Service
 public class TransacaoService {
 
-    private List<Transacao> transacaoList = new ArrayList<>();
-
     private final ContaService contaService;
     private final CategoriaService categoriaService;
-    private long contadorId = 1;
+    private final TransacaoRepository transacaoRepository;
+
 
     public TransacaoService(ContaService contaService,
-                            CategoriaService categoriaService){
+                            CategoriaService categoriaService,
+                            TransacaoRepository transacaoRepository){
 
         this.contaService = contaService;
         this.categoriaService = categoriaService;
+        this.transacaoRepository = transacaoRepository;
     }
 
     public Transacao criarTransacao(
@@ -35,43 +36,35 @@ public class TransacaoService {
                                     LocalDate data,
                                     TipoTransacao tipo,
                                     long contaId,
-                                    long categoriaId){
+                                    long categoriaId) {
 
         Conta conta = contaService.buscarPorId(contaId);
         Categoria categoria = categoriaService.buscarPorId(categoriaId);
 
-     Transacao transacao = new Transacao(
-             contadorId++,
-             descricao.strip(),
-             valor,
-             data,
-             tipo,
-             conta,
-             categoria
-     );
+        Transacao transacao = new Transacao(
+                descricao.strip(),
+                valor,
+                data,
+                tipo,
+                conta,
+                categoria
+        );
 
-
-     transacaoList.add(transacao);
-     return transacao;
+     return transacaoRepository.save(transacao);
     }
 
     public Transacao buscarPorId(long id){
-        for (Transacao transacao : transacaoList) {
-            if (transacao.getId() == id) {
-                return transacao;
-            }
-        }
-        throw new ResourceNotFound("Transação de ID: " + id + " , não encontrada.");
+        return transacaoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFound("Transação de ID: " + id + " , não encontrada."));
     }
 
     public List<Transacao> listarTransacoes() {
-        return new ArrayList<>(transacaoList);
-
+       return transacaoRepository.findAll();
     }
 
     public void deletarTransacao(long id){
         Transacao transacaoEncontrada = buscarPorId(id);
-        transacaoList.remove(transacaoEncontrada);
+        transacaoRepository.deleteById(transacaoEncontrada.getId());
     }
 
     public Transacao atualizarTransacao(long id,
@@ -93,22 +86,21 @@ public class TransacaoService {
             transacao.setData(data);
             transacao.setValor(valor);
 
-            return transacao;
+            return transacaoRepository.save(transacao);
         }
 
         public BigDecimal calcularSaldo(long contaId) {
             Conta conta = contaService.buscarPorId(contaId);
             BigDecimal saldo = BigDecimal.ZERO;
 
-            for (Transacao transacao : transacaoList) {
-                if (transacao.getConta().getId().equals(conta.getId())){
-                    if (transacao.getTipo() == TipoTransacao.RECEITA) {
+            for (Transacao transacao : transacaoRepository.findByConta_Id(contaId)) {
+                if (transacao.getTipo() == TipoTransacao.RECEITA) {
                         saldo = saldo.add(transacao.getValor());
                     } else if (transacao.getTipo() == TipoTransacao.DESPESA) {
                         saldo = saldo.subtract(transacao.getValor());
                     }
                 }
-            }
+
             return saldo;
         }
 
@@ -129,8 +121,7 @@ public class TransacaoService {
 
 
                 List<Transacao> resultExtract = new ArrayList<>();
-                for (Transacao transacao : transacaoList) {
-                    if (contaEncontrada.getId().equals(transacao.getConta().getId())){
+                   for(Transacao transacao : transacaoRepository.findByConta_Id(contaId)){
 
                         if(dataInicio != null && transacao.getData().isBefore(dataInicio)){
                             continue;
@@ -147,29 +138,16 @@ public class TransacaoService {
 
                         resultExtract.add(transacao);
                     }
-                }
+
                 return resultExtract;
             }
+
 
             public boolean possuiTransacao(long contaId){
 
                 Conta contaEncontrada = contaService.buscarPorId(contaId);
-
-                for(Transacao transacaoRecebida : transacaoList) {
-                    if (transacaoRecebida.getConta().getId().equals(contaEncontrada.getId())){
-                        return true;
-                    }
-                }
-
-                return false;
+                return transacaoRepository.existsByConta_Id(contaId);
 
 
             }
-
-
-
-
-
-
-
         }

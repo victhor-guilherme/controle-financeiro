@@ -2,22 +2,42 @@ package com.victhorguilherme.finance_control.transacao;
 
 import com.victhorguilherme.finance_control.categoria.Categoria;
 import com.victhorguilherme.finance_control.conta.Conta;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Entity
 public class Transacao{
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
     private String descricao;
+
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal valor;
+
+    @Column(nullable = false)
     private LocalDate data;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private TipoTransacao tipo;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "conta_id", nullable = false)
     private Conta conta;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
 
+
+
     public Transacao(
-            Long id,
             String descricao,
             BigDecimal valor,
             LocalDate data,
@@ -26,7 +46,6 @@ public class Transacao{
             Categoria categoria
             ){
 
-        this.id = id;
         this.descricao = descricao;
         this.data = data;
         this.tipo = tipo;
@@ -85,6 +104,10 @@ public class Transacao{
 
     public void setCategoria(Categoria categoria) {
         this.categoria = categoria;
+    }
+
+    protected Transacao(){
+
     }
 
 

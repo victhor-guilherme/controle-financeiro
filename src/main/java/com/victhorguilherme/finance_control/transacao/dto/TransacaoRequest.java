@@ -1,6 +1,7 @@
 package com.victhorguilherme.finance_control.transacao.dto;
 
 import com.victhorguilherme.finance_control.transacao.TipoTransacao;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -15,6 +16,7 @@ public class TransacaoRequest {
 
     @NotNull
     @Positive
+    @Digits(integer = 17, fraction = 2)
     private BigDecimal valor;
 
     @NotNull
