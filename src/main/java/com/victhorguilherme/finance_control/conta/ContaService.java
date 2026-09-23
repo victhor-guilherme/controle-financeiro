@@ -9,15 +9,14 @@ import java.util.List;
 @Service
 public class ContaService {
 
-    private List<Conta> contaList;
+    private final ContaRepository contaRepository;
 
-    {
-        contaList = new ArrayList<>();
+    public ContaService(ContaRepository contaRepository) {
+        this.contaRepository = contaRepository;
     }
 
-    private long proximoId = 1;
 
-    public Conta criarConta(String nome){
+    public Conta criarConta(String nome) {
 
         String nomeLimpo = nome.strip();
         List<Conta> todasContas = listarContas();
@@ -30,24 +29,21 @@ public class ContaService {
         }
 
 
-        Conta novaConta = new Conta(nomeLimpo, proximoId);
-        contaList.add(novaConta);
-        proximoId++;
+        Conta novaConta = new Conta(nomeLimpo);
+        contaRepository.save(novaConta);
         return novaConta;
     }
 
-    public List<Conta> listarContas(){
-        return new ArrayList<>(contaList);
+    public List<Conta> listarContas() {
+        return contaRepository.findAll();
     }
 
     public Conta buscarPorId(long id) {
-        for (Conta conta : contaList) {
-            if (conta.getId() == id) {
-                return conta;
-            }
-        }
-        throw new ResourceNotFound("Conta de ID: " + id + " , não encontrada.");
-    }
+        Conta conta = contaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFound("Conta de ID: " + id + " , não encontrada."));
+
+    return conta;
+}
 
     public Conta atualizarConta(long id, String nome){
         Conta conta = buscarPorId(id);
@@ -62,13 +58,13 @@ public class ContaService {
             throw new AccountNameDuplicate("Já existe uma conta cadastrada com o nome: " + nomeLimpo);
         }
 
-        conta.setNome(nome.strip());
+        conta.setNome(nomeLimpo);
+        contaRepository.save(conta);
         return conta;
     }
 
     public void deletarConta(long id){
-        Conta contaEncontrada = buscarPorId(id);
-        contaList.remove(contaEncontrada);
+        contaRepository.deleteById(id);
     }
 
 

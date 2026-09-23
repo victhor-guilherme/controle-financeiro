@@ -1,13 +1,23 @@
 package com.victhorguilherme.finance_control.conta;
 
+import jakarta.persistence.*;
+
+@Entity
 public class Conta {
 
-    private long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
     private String nome;
 
-    public Conta(String nome, long id){
-        this.id = id;
+    public Conta(String nome){
         this.nome = nome;
+    }
+
+    protected Conta(){
+
     }
 
     public long getId(){
@@ -18,7 +28,7 @@ public class Conta {
         return this.nome;
     }
 
-    public Conta setNome(String nome){
+    public Conta setNome(String nome) {
         this.nome = nome;
         return this;
     }
